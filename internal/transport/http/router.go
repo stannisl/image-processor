@@ -19,7 +19,8 @@ func NewRouter(
 
 	router.POST("/upload", imageHandler.UploadImage)
 	router.GET("/image/:id", imageHandler.DownloadProcessedImage)
-	router.GET("/imageOriginal/:id", imageHandler.DownloadOriginalImage)
+	router.HEAD("/image/:id", imageHandler.GetInfoAboutPhoto)
+	router.GET("/image/:id/original", imageHandler.DownloadOriginalImage)
 	router.DELETE("/image/:id", imageHandler.DeleteImage)
 
 	router.GET("/", uiHandler.ServeUI)

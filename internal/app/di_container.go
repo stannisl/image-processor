@@ -100,6 +100,7 @@ func (d *diContainer) EventBus() *kafka.EventBus {
 func (d *diContainer) Storage() *s3.MinIOStorage {
 	return d.storage.Init(func() *s3.MinIOStorage {
 		c, err := s3.NewMinIO(
+			d.log,
 			d.cfg.Storage.Endpoint,
 			d.cfg.Storage.AccessKey,
 			d.cfg.Storage.SecretKey,
@@ -126,7 +127,7 @@ func (d *diContainer) ImageService() *imageservice.Service {
 
 func (d *diContainer) ImageHandler() *handlers.ImageHandler {
 	return d.imageHandler.Init(func() *handlers.ImageHandler {
-		return handlers.NewImageHandler(d.ImageService())
+		return handlers.NewImageHandler(d.ImageService(), d.log)
 	})
 }
 

@@ -51,12 +51,13 @@ func (r *ImageRepository) UpdateImageStatus(ctx context.Context, image *imagedom
 }
 
 func (r *ImageRepository) CreateImage(ctx context.Context, image *imagedomain.Image) (*imagedomain.Image, error) {
-	const q = `INSERT INTO images (filename, height,  width, size, process_type, mime_type)
-			   VALUES ($1, $2, $3, $4, $5, $6)
+	const q = `INSERT INTO images (id, filename, height,  width, size, process_type, mime_type)
+			   VALUES ($1, $2, $3, $4, $5, $6, $7)
 			   RETURNING id, filename, height, width, size, process_type, mime_type, status, updated_at, created_at, processed_at`
 
 	var img imagedomain.Image
 	if err := r.pool.QueryRow(ctx, q,
+		image.ID,
 		image.Filename,
 		image.Height,
 		image.Width,

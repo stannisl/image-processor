@@ -15,20 +15,27 @@ type UploadPhotoResponse struct {
 	Width    int    `json:"width"`
 	Size     int64  `json:"size"`
 
-	MimeType  string    `json:"mime_type"`
-	Status    string    `json:"status"`
-	CreatedAt time.Time `json:"created_at"`
+	MimeType    string `json:"mime_type"`
+	ProcessType string `json:"process_type"`
+	Status      string `json:"status"`
+
+	CreatedAt   time.Time  `json:"created_at"`
+	ProcessedAt *time.Time `json:"processed_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
 }
 
 func UploadResponseFromDomain(d *imagedomain.Image) UploadPhotoResponse {
 	return UploadPhotoResponse{
-		ID:        d.ID,
-		Filename:  d.Filename,
-		Height:    d.Height,
-		Width:     d.Width,
-		Size:      d.Size,
-		MimeType:  d.MimeType.String(),
-		Status:    d.Status.String(),
-		CreatedAt: d.CreatedAt,
+		ID:          d.ID,
+		Filename:    d.Filename,
+		Height:      d.Height,
+		Width:       d.Width,
+		Size:        d.Size,
+		MimeType:    d.MimeType.String(),
+		Status:      d.Status.String(),
+		CreatedAt:   d.CreatedAt,
+		ProcessType: d.ProcessType.String(),
+		UpdatedAt:   d.UpdatedAt,
+		ProcessedAt: d.ProcessedAt,
 	}
 }

@@ -1,8 +1,8 @@
 CREATE TYPE status_type AS ENUM ('failed', 'processing', 'processed', 'new');
-CREATE TYPE mime_type AS ENUM ('image/png', 'image/jpg', 'image/gif');
+CREATE TYPE mime_type AS ENUM ('image/png', 'image/jpg', 'image/gif', 'image/jpeg');
 CREATE TYPE process_type AS ENUM('watermark', 'resize', 'miniature');
 
-CREATE TABLE IF NOT EXISTS image (
+CREATE TABLE IF NOT EXISTS images (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     filename TEXT NOT NULL ,
     height INT NOT NULL,

@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -13,11 +14,13 @@ import (
 
 type ImageHandler struct {
 	service *imageservice.Service
+	log     *slog.Logger
 }
 
-func NewImageHandler(service *imageservice.Service) *ImageHandler {
+func NewImageHandler(service *imageservice.Service, log *slog.Logger) *ImageHandler {
 	return &ImageHandler{
 		service: service,
+		log:     log,
 	}
 }
 
@@ -41,6 +44,7 @@ func (h *ImageHandler) UploadImage(c *gin.Context) {
 		Operation: imagedomain.ProcessTypeWatermark,
 	})
 	if err != nil {
+		h.log.Error("handler: failed to upload photo", "err", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -63,6 +67,22 @@ func (h *ImageHandler) DownloadProcessedImage(c *gin.Context) {
 
 	c.Header("Content-Disposition", fmt.Sprintf(`inline; filename="%s"`, img.Filename))
 	c.Data(http.StatusOK, img.MimeType.String(), data)
+}
+
+func (h *ImageHandler) GetInfoAboutPhoto(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+
+	img, err := h.service.GetPhotoMetadata(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"image": UploadResponseFromDomain(img)})
 }
 
 func (h *ImageHandler) DownloadOriginalImage(c *gin.Context) {

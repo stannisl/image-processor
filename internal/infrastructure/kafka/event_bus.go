@@ -81,16 +81,17 @@ func (b *EventBus) SubscribeUploaded(
 					}
 					return handler(ctx, e)
 				},
-				func(ctx context.Context, msg kafka.Message, lastErr error, attempt int) {
-					var orig ImageUploadedEvent
-					_ = json.Unmarshal(msg.Value, &orig)
-					_ = b.PublishFailed(ctx, ImageFailedEvent{
-						ImageID:       orig.ImageID,
-						Error:         lastErr.Error(),
-						OriginalEvent: orig,
-						Attempt:       attempt,
-					})
-				})
+				nil)
+			//func(ctx context.Context, msg kafka.Message, lastErr error, attempt int) {
+			//	var orig ImageUploadedEvent
+			//	_ = json.Unmarshal(msg.Value, &orig)
+			//	_ = b.PublishFailed(ctx, ImageFailedEvent{
+			//		ImageID:       orig.ImageID,
+			//		Error:         lastErr.Error(),
+			//		OriginalEvent: orig,
+			//		Attempt:       attempt,
+			//	})
+			//})
 		}(i)
 	}
 }

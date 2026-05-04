@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -22,12 +23,13 @@ const (
 )
 
 type MinIOStorage struct {
+	log        *slog.Logger
 	client     *minio.Client
 	bucketOrig BucketName
 	bucketProc BucketName
 }
 
-func NewMinIO(endpoint, accessKey, secretKey string) (*MinIOStorage, error) {
+func NewMinIO(log *slog.Logger, endpoint, accessKey, secretKey string) (*MinIOStorage, error) {
 	client, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),
 		Secure: false,
@@ -37,6 +39,7 @@ func NewMinIO(endpoint, accessKey, secretKey string) (*MinIOStorage, error) {
 	}
 
 	s := &MinIOStorage{
+		log:        log,
 		client:     client,
 		bucketOrig: OriginalBucketName,
 		bucketProc: ProcessedBucketName,
@@ -44,6 +47,8 @@ func NewMinIO(endpoint, accessKey, secretKey string) (*MinIOStorage, error) {
 
 	for _, bucket := range []string{s.bucketOrig.String(), s.bucketProc.String()} {
 		exists, err := client.BucketExists(context.Background(), bucket)
+		slog.Info("bucket exist", "bucketName", bucket, "exists", exists)
+
 		if err != nil {
 			return nil, fmt.Errorf("bucket exists: %w", err)
 		}
@@ -52,6 +57,7 @@ func NewMinIO(endpoint, accessKey, secretKey string) (*MinIOStorage, error) {
 			if err := client.MakeBucket(context.Background(), bucket, minio.MakeBucketOptions{}); err != nil {
 				return nil, fmt.Errorf("create bucket %s: %w", bucket, err)
 			}
+			log.Info("created bucket", "name", bucket)
 		}
 	}
 
@@ -59,22 +65,25 @@ func NewMinIO(endpoint, accessKey, secretKey string) (*MinIOStorage, error) {
 }
 
 func (s *MinIOStorage) SaveOriginal(ctx context.Context, id, contentType string, data []byte) error {
-	_, err := s.client.PutObject(ctx, s.bucketOrig.String(), id,
+	uploadInfo, err := s.client.PutObject(ctx, s.bucketOrig.String(), id,
 		bytes.NewReader(data), int64(len(data)),
 		minio.PutObjectOptions{ContentType: contentType},
 	)
+	s.log.Info("saving original image", "id", id, "contentType", contentType, "uploadInfo", uploadInfo)
 	return err
 }
 
 func (s *MinIOStorage) SaveProcessed(ctx context.Context, id, contentType string, data []byte) error {
-	_, err := s.client.PutObject(ctx, s.bucketProc.String(), id,
+	uploadInfo, err := s.client.PutObject(ctx, s.bucketProc.String(), id,
 		bytes.NewReader(data), int64(len(data)),
 		minio.PutObjectOptions{ContentType: contentType},
 	)
+	s.log.Info("saving processed image", "id", id, "contentType", contentType, "uploadInfo", uploadInfo)
 	return err
 }
 
 func (s *MinIOStorage) GetOriginal(ctx context.Context, id string) ([]byte, error) {
+	s.log.Info("getting original image", "id", id)
 	obj, err := s.client.GetObject(ctx, s.bucketOrig.String(), id, minio.GetObjectOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("get object: %w", err)
@@ -90,6 +99,7 @@ func (s *MinIOStorage) GetOriginal(ctx context.Context, id string) ([]byte, erro
 }
 
 func (s *MinIOStorage) GetProcessed(ctx context.Context, id string) ([]byte, error) {
+	s.log.Info("getting processed image", "id", id)
 	obj, err := s.client.GetObject(ctx, s.bucketProc.String(), id, minio.GetObjectOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("get object: %w", err)

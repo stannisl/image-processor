@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"image"
+	"log/slog"
 
 	"github.com/google/uuid"
 	imagedomain "github.com/stannisl/image-processor/internal/domain/image"
@@ -50,20 +51,24 @@ func (s *Service) UploadPhoto(ctx context.Context, input UploadInput) (*imagedom
 		return nil, fmt.Errorf("UploadPhoto: unknown format")
 	}
 
+	slog.Info("id", "id", id.String())
 	img := &imagedomain.Image{
-		ID:       id,
-		Filename: input.Filename,
-		Height:   cfg.Height,
-		Width:    cfg.Width,
-		Size:     int64(len(input.Data)),
-		MimeType: mime,
+		ID:          id,
+		Filename:    input.Filename,
+		Height:      cfg.Height,
+		Width:       cfg.Width,
+		Size:        int64(len(input.Data)),
+		MimeType:    mime,
+		ProcessType: imagedomain.ProcessTypeWatermark,
 	}
+	slog.Info("imgID", "ID", img.ID)
 
 	img, err = s.repo.CreateImage(ctx, img)
 	if err != nil {
 		return nil, err
 	}
 
+	slog.Info("imgID After Save", "ID", img.ID)
 	if err := s.eventBus.PublishUploaded(ctx, kafka.ImageUploadedEvent{
 		ImageID:      img.ID.String(),
 		OriginalPath: img.ID.String(),
@@ -109,4 +114,12 @@ func (s *Service) DeleteImage(ctx context.Context, ID uuid.UUID) error {
 		return fmt.Errorf("DeleteImage: deleting image: %w", err)
 	}
 	return nil
+}
+
+func (s *Service) GetPhotoMetadata(ctx context.Context, id uuid.UUID) (*imagedomain.Image, error) {
+	img, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("GetPhotoMetadata: failed to get photo: %w", err)
+	}
+	return img, nil
 }
