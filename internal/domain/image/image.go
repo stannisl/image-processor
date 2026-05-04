@@ -15,7 +15,30 @@ const (
 	ProcessTypeMiniature ProcessType = "miniature"
 )
 
+func (p ProcessType) String() string {
+	return string(p)
+}
+
 type MimeType string
+
+func (m MimeType) String() string {
+	return string(m)
+}
+
+func ParseMimeType(mimeType string) (MimeType, bool) {
+	switch mimeType {
+	case "image/png", "image/jpeg", "image/gif":
+		return MimeType(mimeType), true
+	case "gif":
+		return TypeGIF, true
+	case "png":
+		return TypePNG, true
+	case "jpeg", "jpg":
+		return TypeJPEG, true
+	default:
+		return "", false
+	}
+}
 
 const (
 	TypeJPEG MimeType = "image/jpeg"
@@ -24,6 +47,10 @@ const (
 )
 
 type Status string
+
+func (p Status) String() string {
+	return string(p)
+}
 
 const (
 	StatusFailed     Status = "failed"

@@ -1,0 +1,32 @@
+package http
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stannisl/image-processor/internal/transport/http/handlers"
+)
+
+type Router interface {
+	http.Handler
+}
+
+func NewRouter(
+	imageHandler *handlers.ImageHandler,
+	uiHandler *handlers.UIHandler,
+) Router {
+	router := gin.Default()
+
+	router.POST("/upload", imageHandler.UploadImage)
+	router.GET("/photo/:id", imageHandler.DownloadProcessedImage)
+	router.GET("/photoOriginal/:id", imageHandler.DownloadOriginalImage)
+	router.DELETE("/image/:id", imageHandler.DeleteImage)
+
+	router.GET("/", uiHandler.ServeUI)
+
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	return router
+}
