@@ -177,7 +177,7 @@ func (b *EventBus) consume(
 			}
 		}
 
-		if lastErr != nil || onDeadLetter != nil {
+		if lastErr != nil && onDeadLetter != nil {
 			onDeadLetter(ctx, msg, lastErr, maxRetries)
 		}
 

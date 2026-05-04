@@ -18,10 +18,24 @@ func NewImageRepository(pool *pgxpool.Pool) *ImageRepository {
 }
 
 func (r *ImageRepository) GetByID(ctx context.Context, ID uuid.UUID) (*imagedomain.Image, error) {
-	const q = `SELECT * FROM images WHERE id = $1`
+	const q = `SELECT id, filename, height, width, size, process_type, mime_type, status, updated_at, created_at, processed_at
+			   FROM images
+			   WHERE id = $1`
 
 	var img imagedomain.Image
-	if err := r.pool.QueryRow(ctx, q, ID).Scan(&img); err != nil {
+	if err := r.pool.QueryRow(ctx, q, ID).Scan(
+		&img.ID,
+		&img.Filename,
+		&img.Height,
+		&img.Width,
+		&img.Size,
+		&img.ProcessType,
+		&img.MimeType,
+		&img.Status,
+		&img.UpdatedAt,
+		&img.CreatedAt,
+		&img.ProcessedAt,
+	); err != nil {
 		return nil, fmt.Errorf("GetByID: error querying photo: %w", err)
 	}
 
@@ -29,7 +43,7 @@ func (r *ImageRepository) GetByID(ctx context.Context, ID uuid.UUID) (*imagedoma
 }
 
 func (r *ImageRepository) UpdateImageStatus(ctx context.Context, image *imagedomain.Image) error {
-	const q = `UPDATE images SET status = $1 WHERE id = $2`
+	const q = `UPDATE images SET status = $1 WHERE id = $2` // TODO
 	if _, err := r.pool.Exec(ctx, q, image.Status, image.ID); err != nil {
 		return fmt.Errorf("UpdateImageStatus: error updating image: %w", err)
 	}
@@ -42,7 +56,14 @@ func (r *ImageRepository) CreateImage(ctx context.Context, image *imagedomain.Im
 			   RETURNING id, filename, height, width, size, process_type, mime_type, status, updated_at, created_at, processed_at`
 
 	var img imagedomain.Image
-	if err := r.pool.QueryRow(ctx, q, image.Filename, image.Height, image.Width, image.Size).
+	if err := r.pool.QueryRow(ctx, q,
+		image.Filename,
+		image.Height,
+		image.Width,
+		image.Size,
+		image.ProcessType.String(),
+		image.MimeType.String(),
+	).
 		Scan(
 			&img.ID,
 			&img.Filename,

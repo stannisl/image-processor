@@ -94,5 +94,5 @@ func (h *ImageHandler) DeleteImage(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusNoContent, nil)
+	c.Status(http.StatusNoContent)
 }

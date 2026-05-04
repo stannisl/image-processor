@@ -43,7 +43,11 @@ func NewMinIO(endpoint, accessKey, secretKey string) (*MinIOStorage, error) {
 	}
 
 	for _, bucket := range []string{s.bucketOrig.String(), s.bucketProc.String()} {
-		exists, _ := client.BucketExists(context.Background(), bucket)
+		exists, err := client.BucketExists(context.Background(), bucket)
+		if err != nil {
+			return nil, fmt.Errorf("bucket exists: %w", err)
+		}
+
 		if !exists {
 			if err := client.MakeBucket(context.Background(), bucket, minio.MakeBucketOptions{}); err != nil {
 				return nil, fmt.Errorf("create bucket %s: %w", bucket, err)

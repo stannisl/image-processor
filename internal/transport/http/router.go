@@ -18,8 +18,8 @@ func NewRouter(
 	router := gin.Default()
 
 	router.POST("/upload", imageHandler.UploadImage)
-	router.GET("/photo/:id", imageHandler.DownloadProcessedImage)
-	router.GET("/photoOriginal/:id", imageHandler.DownloadOriginalImage)
+	router.GET("/image/:id", imageHandler.DownloadProcessedImage)
+	router.GET("/imageOriginal/:id", imageHandler.DownloadOriginalImage)
 	router.DELETE("/image/:id", imageHandler.DeleteImage)
 
 	router.GET("/", uiHandler.ServeUI)

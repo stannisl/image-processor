@@ -60,6 +60,14 @@ func (p *Processor) processImage(ctx context.Context, event kafka.ImageUploadedE
 		return fmt.Errorf("processImage: failed to get domain by ID: %w", err)
 	}
 
+	if err := imgDomain.ProcessStatus(imagedomain.StatusProcessing); err != nil {
+		return fmt.Errorf("processImage: failed to update domain status: %w", err)
+	}
+
+	if err := p.repo.UpdateImageStatus(ctx, imgDomain); err != nil {
+		return fmt.Errorf("processImage: failed to update image status in db: %w", err)
+	}
+
 	processedImg, err := p.editor.ApplyWatermark(img, imgDomain.MimeType)
 	if err != nil {
 		return fmt.Errorf("processImage: failed to apply watermark: %w", err)
