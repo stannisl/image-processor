@@ -4,6 +4,8 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/stannisl/image-processor/internal/app"
 	"github.com/stannisl/image-processor/internal/config"
@@ -19,9 +21,13 @@ func main() {
 		logger.Error("fail to load config file", "err", err)
 		os.Exit(1)
 	}
-	application := app.NewApp(context.Background(), cfg, logger)
 
-	if err := application.Start(context.Background()); err != nil {
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
+
+	application := app.NewApp(ctx, cfg, logger)
+
+	if err := application.Start(ctx); err != nil {
 		logger.Error("fail to start application", "err", err)
 		os.Exit(1)
 	}

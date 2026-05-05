@@ -5,9 +5,6 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/stannisl/image-processor/internal/config"
@@ -38,9 +35,6 @@ func NewApp(ctx context.Context, cfg *config.Config, logger *slog.Logger) *App {
 }
 
 func (a *App) Start(ctx context.Context) error {
-	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
-	defer cancel()
-
 	errg, ctx := errgroup.WithContext(ctx)
 
 	errg.Go(func() error {
