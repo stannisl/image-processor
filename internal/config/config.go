@@ -84,7 +84,7 @@ func (c PostgresConfig) DSN() string {
 	)
 }
 func LoadConfig() (*Config, error) {
-	kafkaBrokers := getEnvOrDefault("KAFKA_BROKERS", "localhost:29092")
+	kafkaBrokers := getEnvOrDefault("KAFKA_BROKERS", "localhost:9092")
 	if kafkaBrokers == "" {
 		return nil, errors.New("config: no kafka brokers parsed")
 	}
@@ -108,7 +108,7 @@ func LoadConfig() (*Config, error) {
 			BatchSize:     getEnvOrDefault("KAFKA_BATCH_SIZE", 100),
 			BatchTimeout:  getEnvOrDefault("KAFKA_BATCH_TIMEOUT", 10*time.Millisecond),
 			GroupID:       getEnvOrDefault("KAFKA_GROUP_ID", "image-processors"),
-			Concurrency:   getEnvOrDefault("KAFKA_CONCURRENCY", 4),
+			Concurrency:   getEnvOrDefault("KAFKA_CONCURRENCY", 3),
 			MaxRetries:    getEnvOrDefault("KAFKA_MAX_RETRIES", 3),
 			Topics: KafkaTopics{
 				Uploaded:  getEnvOrDefault("KAFKA_TOPIC_UPLOADED", "image.uploaded"),

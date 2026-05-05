@@ -44,7 +44,8 @@ func (a *App) Start(ctx context.Context) error {
 	errg, ctx := errgroup.WithContext(ctx)
 
 	errg.Go(func() error {
-		return a.diContainer.ImageProcessor().Start(ctx, a.cfg.Kafka.Concurrency, a.cfg.Kafka.MaxRetries)
+		time.Sleep(1 * time.Second)
+		return a.diContainer.ImageProcessor().Start(ctx, a.cfg.Kafka.GroupID, a.cfg.Kafka.Concurrency, a.cfg.Kafka.MaxRetries)
 	})
 
 	errg.Go(func() error {
@@ -63,17 +64,21 @@ func (a *App) Start(ctx context.Context) error {
 }
 
 func (a *App) Close(ctx context.Context) error {
+	a.log.Info("shutting down server")
 	ctx, cancel := context.WithTimeout(ctx, 25*time.Second)
 	defer cancel()
 
+	a.log.Info("stopping incoming connections")
 	if err := a.server.Shutdown(ctx); err != nil {
 		return err
 	}
 
+	a.log.Info("closing kafka connections")
 	if err := a.diContainer.EventBus().Close(); err != nil {
 		return err
 	}
 
+	a.log.Info("closing db connections")
 	if err := postgres.Close(ctx, a.diContainer.DB()); err != nil {
 		return err
 	}

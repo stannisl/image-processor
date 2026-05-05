@@ -33,10 +33,11 @@ func NewProcessor(repo *imagerepo.ImageRepository,
 
 func (p *Processor) Start(
 	ctx context.Context,
+	groupID string,
 	workers int,
 	maxRetries int,
 ) error {
-	p.eventBus.SubscribeUploaded(ctx, "image-processors", workers, maxRetries, func(
+	p.eventBus.SubscribeUploaded(ctx, groupID, workers, maxRetries, func(
 		ctx context.Context, event kafka.ImageUploadedEvent) error {
 		return p.processImage(ctx, event)
 	})

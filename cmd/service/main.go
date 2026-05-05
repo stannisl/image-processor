@@ -19,7 +19,6 @@ func main() {
 		logger.Error("fail to load config file", "err", err)
 		os.Exit(1)
 	}
-
 	application := app.NewApp(context.Background(), cfg, logger)
 
 	if err := application.Start(context.Background()); err != nil {

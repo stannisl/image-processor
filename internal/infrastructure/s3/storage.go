@@ -47,8 +47,7 @@ func NewMinIO(log *slog.Logger, endpoint, accessKey, secretKey string) (*MinIOSt
 
 	for _, bucket := range []string{s.bucketOrig.String(), s.bucketProc.String()} {
 		exists, err := client.BucketExists(context.Background(), bucket)
-		slog.Info("bucket exist", "bucketName", bucket, "exists", exists)
-
+		
 		if err != nil {
 			return nil, fmt.Errorf("bucket exists: %w", err)
 		}
